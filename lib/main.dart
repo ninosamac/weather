@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:geolocator/geolocator.dart';
 
 void main() {
   runApp(const MyApp());
@@ -29,10 +30,6 @@ class WeatherScreen extends StatefulWidget {
 }
 
 class _WeatherScreenState extends State<WeatherScreen> {
-  // Coordinates of Zagreb
-  final double latitude = 45.8150;
-  final double longitude = 15.9819;
-
   // Weather data
   String temperature = '';
   String precipitation = '';
@@ -41,13 +38,15 @@ class _WeatherScreenState extends State<WeatherScreen> {
   @override
   void initState() {
     super.initState();
-    fetchWeatherData();
+    determinePosition().then((Position position) {
+      fetchWeatherData(position.latitude, position.longitude);
+    });
   }
 
-  Future<void> fetchWeatherData() async {
+  Future<void> fetchWeatherData(double latitude, double longitude) async {
     final url = Uri.parse(
-        'https://api.open-meteo.com/v1/forecast?latitude=$latitude&longitude=$longitude&hourly=temperature_2m,precipitation&timezone=Europe/Zagreb');
-    
+        'https://api.open-meteo.com/v1/forecast?latitude=$latitude&longitude=$longitude&hourly=temperature_2m,precipitation&timezone=auto');
+
     try {
       final response = await http.get(url);
 
@@ -74,11 +73,40 @@ class _WeatherScreenState extends State<WeatherScreen> {
     }
   }
 
+  Future<Position> determinePosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Check if location services are enabled.
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      return Future.error('Location services are disabled.');
+    }
+
+    // Check for location permission.
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        return Future.error('Location permissions are denied.');
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      return Future.error(
+          'Location permissions are permanently denied, we cannot request permissions.');
+    }
+
+    // Get current location.
+    return await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Zagreb Weather'),
+        title: const Text('Weather App'),
       ),
       body: Center(
         child: isLoading
