@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 
 void main() {
   runApp(const MyApp());
@@ -33,12 +34,14 @@ class _WeatherScreenState extends State<WeatherScreen> {
   // Weather data
   String temperature = '';
   String precipitation = '';
+  String city = '';
   bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
     determinePosition().then((Position position) {
+      fetchCityName(position.latitude, position.longitude);
       fetchWeatherData(position.latitude, position.longitude);
     });
   }
@@ -69,6 +72,20 @@ class _WeatherScreenState extends State<WeatherScreen> {
         temperature = 'Failed to load data';
         precipitation = 'Failed to load data';
         isLoading = false;
+      });
+    }
+  }
+
+  Future<void> fetchCityName(double latitude, double longitude) async {
+    try {
+      List<Placemark> placemarks =
+          await placemarkFromCoordinates(latitude, longitude);
+      setState(() {
+        city = placemarks[0].locality ?? 'Unknown location';
+      });
+    } catch (e) {
+      setState(() {
+        city = 'Failed to get city';
       });
     }
   }
@@ -114,6 +131,11 @@ class _WeatherScreenState extends State<WeatherScreen> {
             : Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  Text(
+                    'City: $city',
+                    style: const TextStyle(fontSize: 20),
+                  ),
+                  const SizedBox(height: 20),
                   Text(
                     'Temperature: $temperature°C',
                     style: const TextStyle(fontSize: 20),
