@@ -19,37 +19,45 @@ class _WeatherScreenState extends State<WeatherScreen> {
   bool isLoading = true;
   String errorMessage = '';
 
+  // Five-day forecast
+  List<Map<String, String>> forecast = [];
+
   @override
   void initState() {
     super.initState();
     _showMockData();
-    _fetchRealLocationAndWeather();
+    _fetchRealLocationWeatherAndForecast();
   }
 
   void _showMockData() {
     final mockPosition = _locationService.getMockPosition();
     final mockCity = _locationService.getMockCity();
     final mockWeatherData = _weatherService.getMockWeatherData();
+    final mockForecast = _weatherService.getMockForecastData();
 
     setState(() {
       city = mockCity;
       temperature = mockWeatherData['temperature'];
       precipitation = mockWeatherData['precipitation'];
+      forecast = mockForecast;
     });
   }
 
-  Future<void> _fetchRealLocationAndWeather() async {
+  Future<void> _fetchRealLocationWeatherAndForecast() async {
     try {
       final position = await _locationService.determinePosition();
       final cityName = await _locationService.getCityFromCoordinates(
           position.latitude, position.longitude);
       final realWeatherData = await _weatherService.fetchWeatherData(
           position.latitude, position.longitude);
+      final realForecastData = await _weatherService.fetchForecastData(
+          position.latitude, position.longitude);
 
       setState(() {
         city = cityName;
         temperature = realWeatherData['temperature'];
         precipitation = realWeatherData['precipitation'];
+        forecast = realForecastData;
         isLoading = false;
       });
     } catch (e) {
@@ -84,6 +92,24 @@ class _WeatherScreenState extends State<WeatherScreen> {
                       const SizedBox(height: 20),
                       Text('Precipitation: $precipitation mm',
                           style: const TextStyle(fontSize: 20)),
+                      const SizedBox(height: 20),
+                      const Text('5-Day Forecast:',
+                          style: TextStyle(
+                              fontSize: 22, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 10),
+                      Expanded(
+                        child: ListView.builder(
+                          itemCount: forecast.length,
+                          itemBuilder: (context, index) {
+                            final dayForecast = forecast[index];
+                            return ListTile(
+                              title: Text(dayForecast['day']!),
+                              subtitle: Text(
+                                  'Temperature: ${dayForecast['temperature']}°C, Precipitation: ${dayForecast['precipitation']} mm'),
+                            );
+                          },
+                        ),
+                      ),
                     ],
                   ),
       ),

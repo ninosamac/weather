@@ -33,6 +33,6 @@ class LocationService {
       double latitude, double longitude) async {
     // For simplicity, use a placeholder as actual reverse geocoding may involve
     // other libraries or APIs (e.g., Google Maps or location APIs).
-    return 'Real City Name';
+    return 'Zagreb';
   }
 }
