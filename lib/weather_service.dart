@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:weather_app/DailyForecast.dart';
-import 'package:weather_app/HourlyWeather.dart';
+import 'package:weather_app/forecast.dart';
+import 'package:weather_app/weather.dart';
 
 class WeatherService {
   // Mock data for testing purposes

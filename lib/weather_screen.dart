@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:weather_app/forecast.dart';
 import 'weather_service.dart';
 import 'location_service.dart';
 
@@ -6,21 +7,21 @@ class WeatherScreen extends StatefulWidget {
   const WeatherScreen({super.key});
 
   @override
-  _WeatherScreenState createState() => _WeatherScreenState();
+  WeatherScreenState createState() => WeatherScreenState();
 }
 
-class _WeatherScreenState extends State<WeatherScreen> {
+class WeatherScreenState extends State<WeatherScreen> {
   final WeatherService _weatherService = WeatherService();
   final LocationService _locationService = LocationService();
 
-  String temperature = '';
-  String precipitation = '';
+  double temperature = 0.0;
+  double precipitation = 0.0;
   String city = '';
   bool isLoading = true;
   String errorMessage = '';
 
   // Five-day forecast
-  List<Map<String, String>> forecast = [];
+  late DailyForecast forecast;
 
   @override
   void initState() {
@@ -30,15 +31,14 @@ class _WeatherScreenState extends State<WeatherScreen> {
   }
 
   void _showMockData() {
-    final mockPosition = _locationService.getMockPosition();
     final mockCity = _locationService.getMockCity();
-    final mockWeatherData = _weatherService.getMockWeatherData();
-    final mockForecast = _weatherService.getMockForecastData();
+    final mockWeatherData = _weatherService.getMockHourlyWeather();
+    final mockForecast = _weatherService.getMockDailyForecast();
 
     setState(() {
       city = mockCity;
-      temperature = mockWeatherData['temperature'];
-      precipitation = mockWeatherData['precipitation'];
+      temperature = mockWeatherData.temperature2m[0];
+      precipitation = mockWeatherData.precipitation[0];
       forecast = mockForecast;
     });
   }
@@ -48,15 +48,15 @@ class _WeatherScreenState extends State<WeatherScreen> {
       final position = await _locationService.determinePosition();
       final cityName = await _locationService.getCityFromCoordinates(
           position.latitude, position.longitude);
-      final realWeatherData = await _weatherService.fetchWeatherData(
+      final realWeatherData = await _weatherService.fetchHourlyWeather(
           position.latitude, position.longitude);
-      final realForecastData = await _weatherService.fetchForecastData(
+      final realForecastData = await _weatherService.fetchDailyForecast(
           position.latitude, position.longitude);
 
       setState(() {
         city = cityName;
-        temperature = realWeatherData['temperature'];
-        precipitation = realWeatherData['precipitation'];
+        temperature = realWeatherData.temperature2m.first;
+        precipitation = realWeatherData.precipitation.first;
         forecast = realForecastData;
         isLoading = false;
       });
@@ -99,14 +99,12 @@ class _WeatherScreenState extends State<WeatherScreen> {
                       const SizedBox(height: 10),
                       Expanded(
                         child: ListView.builder(
-                          itemCount: forecast.length,
+                          itemCount: forecast.temperature2mMax.length,
                           itemBuilder: (context, index) {
-                            final dayForecast = forecast[index];
+                            //             final dayForecast = forecast[index];
                             return ListTile(
-                              title: Text(dayForecast['day']!),
-                              subtitle: Text(
-                                  'Temperature: ${dayForecast['temperature']}°C, Precipitation: ${dayForecast['precipitation']} mm'),
-                            );
+                                title: const Text("NINO"),
+                                subtitle: const Text("data"));
                           },
                         ),
                       ),
