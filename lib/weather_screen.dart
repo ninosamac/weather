@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
+import 'package:weather_icons/weather_icons.dart';
 import 'forecast.dart';
 import 'weather_service.dart';
 import 'weather.dart';
@@ -162,6 +163,10 @@ class _WeatherScreenState extends State<WeatherScreen> {
             final precipitation = _dailyForecast!.precipitationSum[index];
             return Card(
               child: ListTile(
+                leading: BoxedIcon(
+                    getWeatherIcon(temperature, precipitation),
+                    size: 40.0
+                ),
                 title: Text('Day ${index + 1}'),
                 subtitle: Text(
                   'Max Temp: $temperature°C, Precipitation: $precipitation mm',
@@ -173,4 +178,6 @@ class _WeatherScreenState extends State<WeatherScreen> {
       ),
     );
   }
+
+  IconData getWeatherIcon(double temperature, double precipitation) {return Icons.icecream;}
 }
