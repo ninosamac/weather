@@ -49,7 +49,8 @@ class _WeatherScreenState extends State<WeatherScreen> {
   }
 
   Future<Position> _getCurrentLocation() async {
-    final isLocationServiceEnabled = await Geolocator.isLocationServiceEnabled();
+    final isLocationServiceEnabled =
+        await Geolocator.isLocationServiceEnabled();
     if (!isLocationServiceEnabled) {
       throw Exception('Location services are disabled.');
     }
@@ -71,8 +72,10 @@ class _WeatherScreenState extends State<WeatherScreen> {
 
   Future<void> _fetchWeatherData(double latitude, double longitude) async {
     try {
-      final hourlyWeather = await _weatherService.fetchHourlyWeather(latitude, longitude);
-      final dailyForecast = await _weatherService.fetchDailyForecast(latitude, longitude);
+      final hourlyWeather =
+          await _weatherService.fetchHourlyWeather(latitude, longitude);
+      final dailyForecast =
+          await _weatherService.fetchDailyForecast(latitude, longitude);
 
       setState(() {
         _hourlyWeather = hourlyWeather;
@@ -80,7 +83,8 @@ class _WeatherScreenState extends State<WeatherScreen> {
 
         // Calculate the current time based on the fetched timezone
         final offsetSeconds = hourlyWeather.utcOffsetSeconds;
-        _currentDateTime = DateTime.now().toUtc().add(Duration(seconds: offsetSeconds));
+        _currentDateTime =
+            DateTime.now().toUtc().add(Duration(seconds: offsetSeconds));
         _isLoading = false;
       });
     } catch (e) {
@@ -115,13 +119,15 @@ class _WeatherScreenState extends State<WeatherScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _errorMessage != null
-          ? Center(child: Text(_errorMessage!))
-          : _buildWeatherContent(),
+              ? Center(child: Text(_errorMessage!))
+              : _buildWeatherContent(),
     );
   }
 
   Widget _buildWeatherContent() {
-    if (_hourlyWeather == null || _dailyForecast == null || _currentDateTime == null) {
+    if (_hourlyWeather == null ||
+        _dailyForecast == null ||
+        _currentDateTime == null) {
       return const Center(child: Text('No weather data available.'));
     }
 
@@ -136,7 +142,7 @@ class _WeatherScreenState extends State<WeatherScreen> {
           ),
           const SizedBox(height: 8.0),
           Text(
-            'Current Date & Time: ${DateFormat.yMMMMEEEEd().add_Hms().format(_currentDateTime!)}',
+            'Current Date & Time: ${dateToText(_currentDateTime!)}',
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const Divider(height: 20.0),
@@ -147,13 +153,15 @@ class _WeatherScreenState extends State<WeatherScreen> {
           const SizedBox(height: 8.0),
           Card(
             child: ListTile(
-              title: Text('Temperature: ${_hourlyWeather!.temperature2m.first}°C'),
-              subtitle: Text('Precipitation: ${_hourlyWeather!.precipitation.first} mm'),
+              title:
+                  Text('Temperature: ${_hourlyWeather!.temperature2m.first}°C'),
+              subtitle: Text(
+                  'Precipitation: ${_hourlyWeather!.precipitation.first} mm'),
             ),
           ),
           const SizedBox(height: 16.0),
           Text(
-            '5-Day Forecast',
+            '7-Day Forecast',
             style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: 8.0),
@@ -163,10 +171,8 @@ class _WeatherScreenState extends State<WeatherScreen> {
             final precipitation = _dailyForecast!.precipitationSum[index];
             return Card(
               child: ListTile(
-                leading: BoxedIcon(
-                    getWeatherIcon(temperature, precipitation),
-                    size: 40.0
-                ),
+                leading: BoxedIcon(getWeatherIcon(temperature, precipitation),
+                    size: 40.0),
                 title: Text('Day ${index + 1}'),
                 subtitle: Text(
                   'Max Temp: $temperature°C, Precipitation: $precipitation mm',
@@ -179,5 +185,11 @@ class _WeatherScreenState extends State<WeatherScreen> {
     );
   }
 
-  IconData getWeatherIcon(double temperature, double precipitation) {return Icons.icecream;}
+  String dateToText(DateTime dateTime) {
+    return DateFormat.yMMMMEEEEd().add_Hms().format(dateTime);
+  }
+
+  IconData getWeatherIcon(double temperature, double precipitation) {
+    return Icons.icecream;
+  }
 }
