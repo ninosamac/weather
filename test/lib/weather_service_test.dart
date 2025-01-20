@@ -4,7 +4,6 @@ import 'package:weather_app/weather_service.dart';
 class MockWeatherService extends WeatherService {
   bool throwError = false;
 
-  @override
   Future<Map<String, dynamic>> fetchWeatherData(
       double latitude, double longitude) async {
     if (throwError) {
