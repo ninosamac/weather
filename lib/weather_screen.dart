@@ -152,7 +152,8 @@ class _WeatherScreenState extends State<WeatherScreen> {
               child: ListTile(
                 leading: BoxedIcon(getWeatherIcon(temperature, precipitation),
                     size: 40.0),
-                title: Text('Day ${index + 1}'),
+                title: Text(dateToText(
+                    _currentDateTime!.add(Duration(days: (index + 1))))),
                 subtitle: Text(
                   'Max Temp: $temperature°C, Precipitation: $precipitation mm',
                 ),
