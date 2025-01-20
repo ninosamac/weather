@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
+import 'package:weather_app/location_service.dart';
 import 'package:weather_icons/weather_icons.dart';
 import 'forecast.dart';
 import 'weather_service.dart';
@@ -16,6 +17,7 @@ class WeatherScreen extends StatefulWidget {
 
 class _WeatherScreenState extends State<WeatherScreen> {
   final WeatherService _weatherService = WeatherService();
+  final LocationService _locationService = LocationService();
 
   // Default location (e.g., Zagreb)
   static const double _defaultLatitude = 45.8150;
@@ -38,7 +40,7 @@ class _WeatherScreenState extends State<WeatherScreen> {
 
   Future<void> _fetchWeatherDataWithLocation() async {
     try {
-      final position = await _getCurrentLocation();
+      final position = await _locationService.determinePosition();
       await _fetchWeatherData(position.latitude, position.longitude);
       await _fetchCityName(position.latitude, position.longitude);
     } catch (e) {
@@ -46,28 +48,6 @@ class _WeatherScreenState extends State<WeatherScreen> {
       await _fetchWeatherData(_defaultLatitude, _defaultLongitude);
       _cityName = _defaultCity;
     }
-  }
-
-  Future<Position> _getCurrentLocation() async {
-    final isLocationServiceEnabled =
-        await Geolocator.isLocationServiceEnabled();
-    if (!isLocationServiceEnabled) {
-      throw Exception('Location services are disabled.');
-    }
-
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
-        throw Exception('Location permission denied.');
-      }
-    }
-
-    if (permission == LocationPermission.deniedForever) {
-      throw Exception('Location permission permanently denied.');
-    }
-
-    return await Geolocator.getCurrentPosition();
   }
 
   Future<void> _fetchWeatherData(double latitude, double longitude) async {
