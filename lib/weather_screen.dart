@@ -40,12 +40,31 @@ class _WeatherScreenState extends State<WeatherScreen> {
   Future<void> _fetchWeatherDataWithLocation() async {
     try {
       final position = await _locationService.determinePosition();
-      await _fetchWeatherData(position.latitude, position.longitude);
       await _fetchCityName(position.latitude, position.longitude);
+      await _fetchWeatherData(position.latitude, position.longitude);
     } catch (e) {
-      // If location access fails, use the default location and city
+      // If location or wether access fails, use the default location and city
       await _fetchWeatherData(_defaultLatitude, _defaultLongitude);
       _cityName = _defaultCity;
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _fetchCityName(double latitude, double longitude) async {
+    try {
+      final placemarks = await placemarkFromCoordinates(latitude, longitude);
+      if (placemarks.isNotEmpty) {
+        setState(() {
+          _cityName = placemarks.first.locality ?? _defaultCity;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _cityName = _defaultCity;
+      });
     }
   }
 
@@ -70,21 +89,6 @@ class _WeatherScreenState extends State<WeatherScreen> {
       setState(() {
         _errorMessage = 'Failed to fetch weather data: $e';
         _isLoading = false;
-      });
-    }
-  }
-
-  Future<void> _fetchCityName(double latitude, double longitude) async {
-    try {
-      final placemarks = await placemarkFromCoordinates(latitude, longitude);
-      if (placemarks.isNotEmpty) {
-        setState(() {
-          _cityName = placemarks.first.locality ?? _defaultCity;
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _cityName = _defaultCity;
       });
     }
   }
